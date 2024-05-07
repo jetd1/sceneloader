@@ -31,6 +31,13 @@ def create_parser():
         default=8,
         help='Number of workers to download the dataset'
     )
+    parser.add_argument(
+        '--log-file', '-l',
+        type=str,
+        default='',
+        required=False,
+        help='Log file path'
+    )
     return parser
 
 
@@ -85,7 +92,8 @@ def get_logger(name, logfile=None, log_level=logging.INFO):
 
 def main():
     args = create_parser().parse_args()
-    logger = get_logger('RE10kP', f'./process_{time.time()}.log', logging.INFO)
+    log_file = args.log_file if args.log_file else None
+    logger = get_logger('RE10kP', log_file, logging.INFO)
 
     raw_video_dir = os.path.join(args.input_dir, 'raw')
     metadata_dir = os.path.join(args.input_dir, 'metadata')
