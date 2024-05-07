@@ -114,11 +114,14 @@ def download(list_dir, output_dir, num_workers):
     os.makedirs(meta_dir, exist_ok=True)
 
     logging.getLogger("RE10kD").info(f'Saving {len(metadata)} metadata...')
+    f = open(os.path.join(output_dir, 'full_list.txt'), 'w')
     for meta in metadata:
         if not os.path.exists(os.path.join(raw_video_dir, f'{meta["vid"]}.mp4')):
             logging.getLogger("RE10kD").info(f'Video {meta["vid"]} not downloaded, skipping...')
             continue
+        f.write(f'{meta["seq_id"]} {meta["vid"]}\n')
         np.savez_compressed(os.path.join(meta_dir, f'{meta["seq_id"]}.npz'), **meta)
+    f.close()
 
 
 if __name__ == '__main__':
