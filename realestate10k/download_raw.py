@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 from multiprocessing import Pool
 from pytube import YouTube
@@ -90,7 +91,7 @@ def download_workers(args):
     try:
         download_video(v_url, save_path)
     except Exception as e:
-        logging.getLogger("RE10kD").info(f'Failed to download {v_url}: {e}')
+        logging.getLogger("RE10kD").error(f'Failed to download {v_url}: {e}')
 
 
 def download(list_dir, output_dir, num_workers):
@@ -124,11 +125,28 @@ def download(list_dir, output_dir, num_workers):
     f.close()
 
 
-if __name__ == '__main__':
+def get_logger(name, logfile=None, log_level=logging.INFO):
+    logger = logging.getLogger(name)
+    log_formatter = logging.Formatter(
+        '%(asctime)s | %(levelname)s | %(filename)s:%(lineno)s | %(message)s'
+    )
+    c_handler = logging.StreamHandler(stream=sys.stdout)
+    c_handler.setFormatter(log_formatter)
+    c_handler.setLevel(log_level)
+    logger.addHandler(c_handler)
+    if logfile:
+        f_handler = logging.FileHandler(logfile)
+        f_handler.setFormatter(log_formatter)
+        f_handler.setLevel(log_level)
+        logger.addHandler(f_handler)
+    logger.setLevel(log_level)
+    return logger
+
+
+def main():
     args = create_parser().parse_args()
-    logger = logging.getLogger('RE10kD')
-    logger.setLevel(logging.INFO)
-    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger = get_logger(
+        'RE10kD',  f'download_{time.time()}.log', logging.INFO)
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -160,3 +178,7 @@ if __name__ == '__main__':
         os.makedirs(split_output_dir, exist_ok=True)
 
         download(split_list_dir, split_output_dir, args.num_workers)
+
+
+if __name__ == '__main__':
+    main()
