@@ -42,6 +42,10 @@ def create_parser():
 
 def process_seq(args):
     seq_meta_path, raw_dir, output_dir = args
+    if os.path.exists(output_dir):
+        logging.getLogger("RE10kP").info(f'Skipping, dir exists: {output_dir}')
+
+    os.makedirs(output_dir, exist_ok=False)
     metadata = np.load(seq_meta_path, allow_pickle=True)
 
     vid = metadata['vid']
@@ -49,8 +53,6 @@ def process_seq(args):
     timestamps = metadata['timestamps']
 
     logging.getLogger("RE10kP").info(f'Start processing {args[0]} with {len(timestamps)} frames.')
-
-    os.makedirs(output_dir, exist_ok=True)
 
     for i, timestamp in enumerate(timestamps):
         timestamp = int(timestamp / 1000)

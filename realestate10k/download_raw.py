@@ -1,5 +1,4 @@
 import os
-import sys
 from utils import get_logger
 
 from multiprocessing import Pool
@@ -95,6 +94,11 @@ def download_workers(args):
     vid, raw_video_dir = args
     v_url = f'https://www.youtube.com/watch?v={vid}'
     save_path = os.path.join(raw_video_dir, f'{vid}.mp4')
+
+    if os.path.exists(save_path):
+        logging.getLogger("RE10kD").info(f'Skipping, already downloaded: {save_path}')
+        return
+
     try:
         download_video(v_url, save_path)
     except Exception as e:
