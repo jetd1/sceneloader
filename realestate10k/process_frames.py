@@ -2,8 +2,7 @@ import argparse
 import logging
 import os
 import shutil
-import sys
-import time
+from utils import get_logger
 
 import numpy as np
 from multiprocessing import Pool
@@ -72,28 +71,9 @@ def process_seq(args):
             break
 
 
-def get_logger(name, logfile=None, log_level=logging.INFO):
-    logger = logging.getLogger(name)
-    log_formatter = logging.Formatter(
-        '%(asctime)s | %(levelname)s | %(filename)s:%(lineno)s | %(message)s'
-    )
-    c_handler = logging.StreamHandler(stream=sys.stdout)
-    c_handler.setFormatter(log_formatter)
-    c_handler.setLevel(log_level)
-    logger.addHandler(c_handler)
-    if logfile:
-        f_handler = logging.FileHandler(logfile)
-        f_handler.setFormatter(log_formatter)
-        f_handler.setLevel(log_level)
-        logger.addHandler(f_handler)
-    logger.setLevel(log_level)
-    return logger
-
-
 def main():
     args = create_parser().parse_args()
-    log_file = args.log_file if args.log_file else None
-    logger = get_logger('RE10kP', log_file, logging.INFO)
+    _ = get_logger('RE10kP', args.log_file, logging.INFO)
 
     raw_video_dir = os.path.join(args.input_dir, 'raw')
     metadata_dir = os.path.join(args.input_dir, 'metadata')
@@ -101,11 +81,9 @@ def main():
     full_list = [f.split(' ')[0] for f in full_list]
 
     os.makedirs(args.output_dir, exist_ok=True)
-
     process_seq_args = []
     for seq in full_list:
         seq_meta_path = os.path.join(metadata_dir, f'{seq}.npz')
-        raw_video_path = os.path.join(raw_video_dir, f'{seq}.mp4')
         process_seq_args.append((seq_meta_path, raw_video_dir, os.path.join(args.output_dir, seq)))
 
     with Pool(args.num_workers) as p:

@@ -1,6 +1,6 @@
 import os
 import sys
-import time
+from utils import get_logger
 
 from multiprocessing import Pool
 from pytube import YouTube
@@ -132,28 +132,9 @@ def download(list_dir, output_dir, num_workers):
     f.close()
 
 
-def get_logger(name, logfile=None, log_level=logging.INFO):
-    logger = logging.getLogger(name)
-    log_formatter = logging.Formatter(
-        '%(asctime)s | %(levelname)s | %(filename)s:%(lineno)s | %(message)s'
-    )
-    c_handler = logging.StreamHandler(stream=sys.stdout)
-    c_handler.setFormatter(log_formatter)
-    c_handler.setLevel(log_level)
-    logger.addHandler(c_handler)
-    if logfile:
-        f_handler = logging.FileHandler(logfile)
-        f_handler.setFormatter(log_formatter)
-        f_handler.setLevel(log_level)
-        logger.addHandler(f_handler)
-    logger.setLevel(log_level)
-    return logger
-
-
 def main():
     args = create_parser().parse_args()
-    log_file = args.log_file if args.log_file else None
-    logger = get_logger('RE10kD', log_file, logging.INFO)
+    logger = get_logger('RE10kD', args.log_file, logging.INFO)
 
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -173,11 +154,7 @@ def main():
 
     assert os.path.exists(list_dir)
 
-    if args.split == 'all':
-        splits = ['train', 'test']
-    else:
-        splits = [args.split]
-
+    splits = ['train', 'test'] if args.split == 'all' else [args.split]
     for split in splits:
         logger.info(f'Processing split: {split}')
         split_list_dir = os.path.join(list_dir, split)
