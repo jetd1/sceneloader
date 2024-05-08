@@ -92,7 +92,7 @@ def export_adobe_json_from_npz(args):
 
 def main():
     args = create_parser().parse_args()
-    logger = get_logger("RE10kE_ADOBE", args.log_file, logging.INFO)
+    _ = get_logger("RE10kE_ADOBE", args.log_file, logging.INFO)
 
     metadata_dir = os.path.join(args.input_dir, 'metadata')
     full_list = open(os.path.join(args.input_dir, 'full_list.txt')).read().splitlines()
@@ -111,8 +111,10 @@ def main():
         p.map(export_adobe_json_from_npz, process_seq_args)
 
     json_list = [os.path.abspath(j[1]) for j in process_seq_args]
-    with open(os.path.join(args.output_dir, 'manifest.txt'), 'w') as f:
-        f.write('\n'.join(json_list))
+    f = open(os.path.join(args.output_dir, 'manifest.txt'), 'w')
+    for j in json_list:
+        if os.path.exists(j):
+            f.write(f'{j}\n')
 
 
 if __name__ == '__main__':

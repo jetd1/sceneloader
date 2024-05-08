@@ -42,11 +42,16 @@ def create_parser():
 
 def process_seq(args):
     seq_meta_path, raw_dir, output_dir = args
+    metadata = np.load(seq_meta_path, allow_pickle=True)
+
     if os.path.exists(output_dir):
-        logging.getLogger("RE10kP").info(f'Skipping, dir exists: {output_dir}')
+        if len(os.listdir(output_dir)) == len(metadata['timestamps']):
+            logging.getLogger("RE10kP").info(f'Skipping, dir exists: {output_dir}')
+            return
+        else:
+            shutil.rmtree(output_dir)
 
     os.makedirs(output_dir, exist_ok=False)
-    metadata = np.load(seq_meta_path, allow_pickle=True)
 
     vid = metadata['vid']
     video_path = os.path.join(raw_dir, f'{vid}.mp4')
