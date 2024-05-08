@@ -22,7 +22,7 @@ def create_parser():
         '--output-dir', '-o',
         type=str,
         required=True,
-        help='Input directory (should contain raw/ and metadata/)'
+        help='Output directory'
     )
     parser.add_argument(
         '--num-workers', '-n',

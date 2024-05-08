@@ -42,6 +42,13 @@ def create_parser():
         required=False,
         help='Log file path'
     )
+    parser.add_argument(
+        '--max-files', '-m',
+        type=int,
+        default=99999999,
+        required=False,
+        help='Max number of files to download'
+    )
     return parser
 
 
@@ -55,13 +62,13 @@ def process_meta(meta):
         lines = lines[1:]
         length = len(lines)
         timestamps = np.zeros(length, dtype=np.int64)
-        intrinsics = np.zeros((length, 6), dtype=np.float32)
+        intrinsics = np.zeros((length, 4), dtype=np.float32)
         poses = np.zeros((length, 12), dtype=np.float32)
 
         for i, l in enumerate(lines):
             line = l.split(' ')
             timestamps[i] = int(line[0])
-            intrinsics[i] = [float(i) for i in line[1:7]]
+            intrinsics[i] = [float(i) for i in line[1:5]]
             poses[i] = [float(i) for i in line[7:19]]
 
         ret = {
@@ -102,15 +109,17 @@ def download_workers(args):
     try:
         download_video(v_url, save_path)
     except Exception as e:
+        if os.path.exists(save_path):
+            os.remove(save_path)
         logging.getLogger("RE10kD").error(f'Failed to download {v_url}: {e}')
 
 
-def download(list_dir, output_dir, num_workers):
+def download(list_dir, output_dir, num_workers, max_files=99999999):
     metadata = os.listdir(list_dir)
     metadata = [os.path.join(list_dir, x) for x in metadata if x.endswith('.txt')]
     logging.getLogger("RE10kD").info(f'# metadata: {len(metadata)}')
 
-    metadata = [process_meta(x) for x in metadata]
+    metadata = [process_meta(x) for x in metadata][:max_files]
     logging.getLogger("RE10kD").info(f'Processed {len(metadata)} metadata...')
 
     raw_video_dir = os.path.join(output_dir, 'raw')
@@ -165,7 +174,7 @@ def main():
         split_output_dir = os.path.join(args.output_dir, split)
         os.makedirs(split_output_dir, exist_ok=True)
 
-        download(split_list_dir, split_output_dir, args.num_workers)
+        download(split_list_dir, split_output_dir, args.num_workers, max_files=args.max_files)
 
 
 if __name__ == '__main__':
