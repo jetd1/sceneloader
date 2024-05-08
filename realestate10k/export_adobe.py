@@ -38,6 +38,13 @@ def create_parser():
         required=False,
         help='Log file path'
     )
+    parser.add_argument(
+        '--max-seq', '-m',
+        type=int,
+        default=99999999,
+        required=False,
+        help='Max number of sequences to include'
+    )
     return parser
 
 
@@ -99,6 +106,7 @@ def main():
         img_dir = os.path.join(args.input_dir, 'images_org')
         process_seq_args.append((npz_path, json_path, img_dir))
 
+    process_seq_args = process_seq_args[:args.max_seq]
     with Pool(args.num_workers) as p:
         p.map(export_adobe_json_from_npz, process_seq_args)
 
