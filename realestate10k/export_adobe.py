@@ -110,11 +110,20 @@ def main():
     with Pool(args.num_workers) as p:
         p.map(export_adobe_json_from_npz, process_seq_args)
 
-    json_list = [os.path.abspath(j[1]) for j in process_seq_args]
-    f = open(os.path.join(args.output_dir, 'manifest.txt'), 'w')
-    for j in json_list:
-        if os.path.exists(j):
-            f.write(f'{j}\n')
+    try:
+        os.sync()
+        json_list = [os.path.abspath(j[1]) for j in process_seq_args]
+        with open(os.path.join(args.output_dir, 'manifest.txt'), 'w') as f:
+            for j in json_list:
+                if os.path.exists(j):
+                    f.write(f'{j}\n')
+
+    except Exception as e:
+        logging.getLogger("RE10kE_ADOBE").error(f'Error syncing and writing manifest: {e}')
+
+    finally:
+        os.sync()
+        logging.shutdown()
 
 
 if __name__ == '__main__':

@@ -176,6 +176,9 @@ def main():
 
         download(split_list_dir, split_output_dir, args.num_workers, max_files=args.max_files)
 
+    os.sync()
+    logging.shutdown()
+
 
 if __name__ == '__main__':
     main()

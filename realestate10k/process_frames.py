@@ -96,6 +96,9 @@ def main():
     with Pool(args.num_workers) as p:
         p.map(process_seq, process_seq_args)
 
+    os.sync()
+    logging.shutdown()
+
 
 if __name__ == '__main__':
     main()
