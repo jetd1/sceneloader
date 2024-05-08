@@ -1,4 +1,6 @@
 import os
+import random
+
 from utils import get_logger
 
 from multiprocessing import Pool
@@ -94,7 +96,7 @@ def download_video(video_url, save_path):
         logging.getLogger("RE10kD").info(f'No perfect stream for {video_url}, using the first one...')
         stream = streams.first()
 
-    stream.download(filename=save_path, max_retries=3)
+    stream.download(filename=save_path, max_retries=5)
 
 
 def download_workers(args):
@@ -119,7 +121,7 @@ def download(list_dir, output_dir, num_workers, max_files=99999999):
     metadata = [os.path.join(list_dir, x) for x in metadata if x.endswith('.txt')]
     logging.getLogger("RE10kD").info(f'# metadata: {len(metadata)}')
 
-    metadata = [process_meta(x) for x in metadata][:max_files]
+    metadata = [process_meta(x) for i, x in enumerate(metadata) if i < max_files]
     logging.getLogger("RE10kD").info(f'Processed {len(metadata)} metadata...')
 
     raw_video_dir = os.path.join(output_dir, 'raw')
@@ -128,8 +130,10 @@ def download(list_dir, output_dir, num_workers, max_files=99999999):
     vids = list(set([x['vid'] for x in metadata]))
 
     logging.getLogger("RE10kD").info(f'Downloading {len(vids)} videos with {num_workers} workers...')
+    args = list(zip(vids, [raw_video_dir] * len(vids)))
+    random.shuffle(args)
     with Pool(num_workers) as p:
-        p.map(download_workers, zip(vids, [raw_video_dir] * len(vids)))
+        p.map(download_workers, args)
 
     meta_dir = os.path.join(output_dir, 'metadata')
     os.makedirs(meta_dir, exist_ok=True)

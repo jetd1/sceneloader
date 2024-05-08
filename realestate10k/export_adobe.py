@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 
 import numpy as np
 import json
@@ -107,6 +108,7 @@ def main():
         process_seq_args.append((npz_path, json_path, img_dir))
 
     process_seq_args = process_seq_args[:args.max_seq]
+    random.shuffle(process_seq_args)
     with Pool(args.num_workers) as p:
         p.map(export_adobe_json_from_npz, process_seq_args)
 

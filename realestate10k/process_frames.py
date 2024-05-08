@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import random
 import shutil
 from utils import get_logger
 
@@ -92,6 +93,7 @@ def main():
     for seq in full_list:
         seq_meta_path = os.path.join(metadata_dir, f'{seq}.npz')
         process_seq_args.append((seq_meta_path, raw_video_dir, os.path.join(args.output_dir, seq)))
+    random.shuffle(process_seq_args)
 
     with Pool(args.num_workers) as p:
         p.map(process_seq, process_seq_args)
